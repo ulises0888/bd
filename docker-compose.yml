@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_NAME=market
+      - JWT_SECRET=mi_clave_secreta
+
+  frontend:
+    build: ./frontend/myapp
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:5.7
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: market
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
